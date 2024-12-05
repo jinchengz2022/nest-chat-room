@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `User` MODIFY `nickName` VARCHAR(191) NOT NULL DEFAULT '',
+    MODIFY `email` CHAR(50) NOT NULL,
+    MODIFY `headPic` VARCHAR(191) NOT NULL DEFAULT '';
