@@ -57,9 +57,9 @@ export class UserService {
     try {
       await this.emailService.sendMail({
         to: params.to,
-        subject: `您的注册验证码为：${code}`,
+        subject: `您的验证码为：${code}`,
       });
-      await this.redisService.set(`register_${params.to}`, code);
+      await this.redisService.set(`${params.action ?? 'register'}_${params.to}`, code);
       return 'success';
     } catch (error) {
       throw new BadRequestException(error);
@@ -92,11 +92,58 @@ export class UserService {
     throw new BadRequestException('密码错误');
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateUser(createUserDto: Omit<CreateUserDto, 'password'>, userId: number) {
+    // const user = await this.prismaService.user.findUnique({
+    //   where: {
+    //     id: userId,
+    //   },
+    // });
+
+    // if (!user) {
+    //   throw new BadRequestException('该用户已存在，请重新输入');
+    // }
+
+    try {
+      await this.prismaService.user.update({
+        where: {
+          userName: createUserDto.userName,
+        },
+        data: createUserDto,
+      });
+
+      return 'success';
+    } catch (error) {
+      throw new BadRequestException(String(error));
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async updatePassword(
+    createUserDto: CreateUserDto,
+  ) {
+    const code = await this.redisService.get(
+      `updatePwd_${createUserDto.email}`,
+    );
+
+    if (!code) {
+      throw new BadRequestException('验证码已失效');
+    }
+
+    if (code !== createUserDto.captcha) {
+      throw new BadRequestException('验证码错误');
+    }
+
+    try {
+      await this.prismaService.user.update({
+        where: {
+          userName: createUserDto.userName,
+        },
+        data: {
+          password: md5(createUserDto.password),
+        },
+      });
+      return 'success';
+    } catch (error) {
+      throw new BadRequestException(String(error));
+    }
   }
 }

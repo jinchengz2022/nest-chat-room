@@ -11,6 +11,7 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserInfo } from 'src/custom.decorator';
 
 @Controller('user')
 export class UserController {
@@ -32,5 +33,22 @@ export class UserController {
     @Query('password') password: string,
   ) {
     return this.userService.login({ userName, password });
+  }
+
+  @Post('UpdatePwd')
+  updatePassword(
+    @Body()
+    createUserDto: CreateUserDto,
+  ) {
+    return this.userService.updatePassword(createUserDto);
+  }
+
+  @Post('UpdateUser')
+  updateUser(
+    @Body()
+    createUserDto: Omit<CreateUserDto, 'password'>,
+    @UserInfo('userId') userId: number
+  ) {
+    return this.userService.updateUser(createUserDto, userId);
   }
 }
