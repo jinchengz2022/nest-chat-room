@@ -9,6 +9,7 @@ import { RedisModule } from './redis/redis.module';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/auth.guard';
+import { FriendshipModule } from './friendship/friendship.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AuthGuard } from './auth/auth.guard';
     PrismaModule,
     EmailModule,
     RedisModule,
+    FriendshipModule,
   ],
   controllers: [AppController],
   providers: [

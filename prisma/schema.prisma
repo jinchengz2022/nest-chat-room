@@ -22,4 +22,29 @@ model User {
   headPic    String   @default("")
   createTime DateTime @default(now())
   updateTime DateTime @updatedAt
+
+  friends        Friendship[] @relation("userToFriend")
+  inverseFriends Friendship[] @relation("friendToUser")
+}
+
+model Friendship {
+  userId Int
+  user   User @relation("userToFriend", fields: [userId], references: [id])
+
+  friendId Int
+  friend   User @relation("friendToUser", fields: [friendId], references: [id])
+
+  @@id([userId, friendId])
+}
+
+model FriendRequest {
+  id         Int      @id @default(autoincrement())
+  // 发送请求方
+  fromUserId Int
+  // 待添加
+  toUserId   Int
+  reason     String   @db.Char(100)
+  status     Int
+  createTime DateTime @default(now())
+  updateTime DateTime @updatedAt
 }

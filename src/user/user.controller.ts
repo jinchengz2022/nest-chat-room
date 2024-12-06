@@ -11,7 +11,7 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserInfo } from 'src/custom.decorator';
+import { RequireLogin, UserInfo } from 'src/custom.decorator';
 
 @Controller('user')
 export class UserController {
@@ -44,11 +44,11 @@ export class UserController {
   }
 
   @Post('UpdateUser')
+  @RequireLogin()
   updateUser(
     @Body()
     createUserDto: Omit<CreateUserDto, 'password'>,
-    @UserInfo('userId') userId: number
   ) {
-    return this.userService.updateUser(createUserDto, userId);
+    return this.userService.updateUser(createUserDto);
   }
 }
