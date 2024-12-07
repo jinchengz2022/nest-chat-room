@@ -1,26 +1,123 @@
-import { Injectable } from '@nestjs/common';
-import { CreateChatroomDto } from './dto/create-chatroom.dto';
-import { UpdateChatroomDto } from './dto/update-chatroom.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ChatroomService {
-  create(createChatroomDto: CreateChatroomDto) {
-    return 'This action adds a new chatroom';
+  @Inject(PrismaService)
+  private prismaService: PrismaService;
+
+  // 一对一聊天
+  async createOneByOne(friendId: number, userId: number) {
+    const chatRes = await this.prismaService.chatRoom.create({
+      data: {
+        name: '聊天室：' + Math.random().toString().substring(2, 8),
+      },
+      select: { id: true },
+    });
+
+    await this.prismaService.userChatRoom.create({
+      data: {
+        userId,
+        chatRoomId: chatRes.id,
+      },
+    });
+
+    await this.prismaService.userChatRoom.create({
+      data: {
+        userId: Number(friendId),
+        chatRoomId: chatRes.id,
+      },
+    });
+    return 'success';
   }
 
-  findAll() {
-    return `This action returns all chatroom`;
+  // 创建群聊
+  async createGroup(name: string, userId: number) {
+    const chatRes = await this.prismaService.chatRoom.create({
+      data: {
+        name,
+        type: true,
+      },
+      select: { id: true },
+    });
+
+    await this.prismaService.userChatRoom.create({
+      data: {
+        userId,
+        chatRoomId: chatRes.id,
+      },
+    });
+
+    return 'success';
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} chatroom`;
+  async chatList(type: boolean, userId: number) {
+    const userChatRoomRes = await this.prismaService.userChatRoom.findMany({
+      where: { userId },
+      select: { chatRoomId: true },
+    });
+
+    const list = await this.prismaService.chatRoom.findMany({
+      where: {
+        id: {
+          in: userChatRoomRes.map((i) => i.chatRoomId),
+        },
+        type,
+      },
+      select: { id: true, type: true, name: true },
+    });
+
+    const res = [];
+
+    for (let i = 0; i < list.length; i++) {
+      const userIds = await this.prismaService.userChatRoom.findMany({
+        where: { chatRoomId: list[i].id },
+      });
+      res.push({
+        ...list[i],
+        userCount: userIds.length,
+        userList: userIds.map((i) => i.userId),
+      });
+    }
+
+    return res;
   }
 
-  update(id: number, updateChatroomDto: UpdateChatroomDto) {
-    return `This action updates a #${id} chatroom`;
+  // 加入群聊
+  async joinChatRoom(chatRoomId: number, userId: number) {
+    await this.prismaService.userChatRoom.create({
+      data: {
+        userId,
+        chatRoomId,
+      },
+    });
+
+    return 'success';
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} chatroom`;
+  // 退出群聊
+  async quitChatRoom(chatRoomId: number, userId: number) {
+    await this.prismaService.userChatRoom.deleteMany({
+      where: { chatRoomId, userId },
+    });
+
+    return 'success';
+  }
+
+  // 聊天人员列表
+  async chatMemberList(chatRoomId: number, userId: number) {
+    const userList = await this.prismaService.userChatRoom.findMany({
+      where: { chatRoomId },
+    });
+
+    const res = await this.prismaService.user.findMany({
+      where: {
+        id: {
+          in: userList.map((i) => i.userId),
+        },
+      },
+      select: { createTime: false, updateTime: false },
+    });
+    return res;
   }
 }

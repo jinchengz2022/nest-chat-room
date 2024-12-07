@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `ChatRoom` ADD COLUMN `type` BOOLEAN NOT NULL DEFAULT false;

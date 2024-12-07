@@ -48,3 +48,20 @@ model FriendRequest {
   createTime DateTime @default(now())
   updateTime DateTime @updatedAt
 }
+
+model ChatRoom {
+  id         Int      @unique @default(autoincrement())
+  name       String   @db.Char(20)
+  // false -> 单人
+  // true -> 多人
+  type       Boolean  @default(false)
+  createTime DateTime @default(now())
+  updateTime DateTime @updatedAt
+}
+
+model UserChatRoom {
+  userId     Int
+  chatRoomId Int
+
+  @@id([userId, chatRoomId])
+}
