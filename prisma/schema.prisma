@@ -41,7 +41,7 @@ model FriendRequest {
   id         Int      @id @default(autoincrement())
   // 发送请求方
   fromUserId Int
-  // 待添加
+  // 对方 id
   toUserId   Int
   reason     String   @db.Char(100)
   status     Int

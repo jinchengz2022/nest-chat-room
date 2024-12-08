@@ -74,6 +74,7 @@ export class UserService {
       where: {
         userName: params.userName,
       },
+      select: { userName: true, id: true, password: true },
     });
 
     if (!user) {
@@ -89,15 +90,14 @@ export class UserService {
           },
           { expiresIn: '7d' },
         ),
+        ...user,
       };
     }
 
     throw new BadRequestException('密码错误');
   }
 
-  async updateUser(
-    createUserDto: Omit<CreateUserDto, 'password'>,
-  ) {
+  async updateUser(createUserDto: Omit<CreateUserDto, 'password'>) {
     const user = await this.prismaService.user.findUnique({
       where: {
         userName: createUserDto.userName,

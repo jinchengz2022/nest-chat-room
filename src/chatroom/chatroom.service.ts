@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -28,7 +28,7 @@ export class ChatroomService {
         chatRoomId: chatRes.id,
       },
     });
-    return 'success';
+    return chatRes.id;
   }
 
   // 创建群聊
@@ -84,15 +84,31 @@ export class ChatroomService {
   }
 
   // 加入群聊
-  async joinChatRoom(chatRoomId: number, userId: number) {
+  async joinChatRoom(name: string, userId: number) {
+    const roomRes = await this.prismaService.chatRoom.findFirst({
+      where: { name },
+    });
+    if (!roomRes) {
+      throw new BadRequestException('该群不存在');
+    }
+
+    const userAndRoom = await this.prismaService.userChatRoom.findMany({
+      where: { chatRoomId: roomRes.id, userId },
+    });
+
+    // 已在群中
+    if (userAndRoom) {
+      return userAndRoom[0].chatRoomId;
+    }
+
     await this.prismaService.userChatRoom.create({
       data: {
         userId,
-        chatRoomId,
+        chatRoomId: roomRes.id,
       },
     });
 
-    return 'success';
+    return roomRes.id;
   }
 
   // 退出群聊

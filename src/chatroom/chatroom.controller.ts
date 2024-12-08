@@ -41,10 +41,10 @@ export class ChatroomController {
     return this.chatroomService.chatList(type, userId)
   }
 
-  @Get('JoinChatRoom/:chatRoomId')
+  @Get('JoinChatRoom')
   @RequireLogin()
-  joinChatRoom(@Param('chatRoomId') chatRoomId: number, @UserInfo('userId') userId: number) {
-    return this.chatroomService.joinChatRoom(chatRoomId, userId)
+  joinChatRoom(@Query('chatRoomName') chatRoomName: string, @UserInfo('userId') userId: number) {
+    return this.chatroomService.joinChatRoom(chatRoomName, userId)
   }
 
   @Get('QuitChatRoom/:chatRoomId')

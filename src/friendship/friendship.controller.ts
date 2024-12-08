@@ -16,7 +16,7 @@ export class FriendshipController {
   @Get('ToAddList')
   @RequireLogin()
   toAddList(@UserInfo('userId') userId: number) {
-    return this.friendshipService.toAddList(userId);
+    return this.friendshipService.requestList(userId);
   }
 
   @Get('Agree/:id')

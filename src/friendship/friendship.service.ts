@@ -22,7 +22,7 @@ export class FriendshipService {
       data: {
         fromUserId: userId,
         toUserId: addUser.id,
-        reason: addFriendshipDto.reason,
+        reason: addFriendshipDto?.reason || '',
         status: 0,
       },
     });
@@ -30,11 +30,37 @@ export class FriendshipService {
     return 'success';
   }
 
+  // 我发送的添加
   async toAddList(userId: number) {
     const fromUserIds = await this.prismaService.friendRequest.findMany({
       where: {
+        fromUserId: userId,
+      },
+    });
+
+    const res = [];
+
+    for (let i = 0; i < fromUserIds.length; i++) {
+      const user = await this.prismaService.user.findUnique({
+        where: { id: fromUserIds[i].toUserId },
+      });
+      res.push({
+        ...user,
+        state: fromUserIds[i].status,
+        reason: fromUserIds[i].reason,
+        isMe: true // 是否是我发送的添加请求
+      });
+    }
+
+    return res;
+  }
+
+  // 添加我的用户的列表
+  async AddList(userId: number) {
+    const fromUserIds = await this.prismaService.friendRequest.findMany({
+      where: {
         toUserId: userId,
-        // status: 0
+        status: 0
       },
     });
 
@@ -43,23 +69,29 @@ export class FriendshipService {
     for (let i = 0; i < fromUserIds.length; i++) {
       const user = await this.prismaService.user.findUnique({
         where: { id: fromUserIds[i].fromUserId },
-        // select: { userName: true, nickName: true },
       });
       res.push({
         ...user,
-        state: requestStatus[fromUserIds[i].status],
+        state: fromUserIds[i].status,
+        reason: fromUserIds[i].reason
       });
     }
 
     return res;
   }
 
+  async requestList(userId: number) {
+    const res1 = await this.AddList(userId);
+    const res2 = await this.toAddList(userId);
+
+    return [...res1, ...res2]
+  }
+
   async agree(friendId: number, userId: number) {
-    console.log({ friendId, userId });
 
     await this.prismaService.friendRequest.updateMany({
       where: {
-        fromUserId: friendId,
+        fromUserId:  friendId,
         toUserId: userId,
         status: 0,
       },
