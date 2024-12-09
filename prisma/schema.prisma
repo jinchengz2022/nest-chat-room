@@ -65,3 +65,14 @@ model UserChatRoom {
 
   @@id([userId, chatRoomId])
 }
+
+model ChatHistory {
+  id         Int      @id @default(autoincrement())
+  content    String   @db.VarChar(500)
+  // 0: 文本 1: 图片 2: 文件
+  type       Int
+  chatRoomId Int
+  senderId   Int
+  createTime DateTime @default(now())
+  updateTiem DateTime @updatedAt
+}
