@@ -149,4 +149,10 @@ export class UserService {
       throw new BadRequestException(String(error));
     }
   }
+
+  async list() {
+    const res = await this.prismaService.user.findMany();
+
+    return res;
+  }
 }

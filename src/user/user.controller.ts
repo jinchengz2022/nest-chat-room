@@ -51,4 +51,10 @@ export class UserController {
   ) {
     return this.userService.updateUser(createUserDto);
   }
+
+  @Get('List')
+  @RequireLogin()
+  list() {
+    return this.userService.list();
+  }
 }

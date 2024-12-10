@@ -51,6 +51,27 @@ export class ChatroomService {
     return 'success';
   }
 
+  async addGroupMember(params: { userId: number; chatRoomId: number }) {
+    const { userId, chatRoomId } = params;
+    const chatRoomRes = await this.prismaService.userChatRoom.findMany({
+      where: { userId, chatRoomId },
+    });
+
+    if (chatRoomRes.length) {
+      throw new BadRequestException('该成员已在群中');
+    }
+
+    await this.prismaService.userChatRoom.create({
+      data: {
+        chatRoomId,
+        userId,
+      },
+    });
+
+    return 'success';
+  }
+
+  // 聊天列表
   async chatList(type: boolean, userId: number) {
     const userChatRoomRes = await this.prismaService.userChatRoom.findMany({
       where: { userId },
@@ -73,8 +94,18 @@ export class ChatroomService {
       const userIds = await this.prismaService.userChatRoom.findMany({
         where: { chatRoomId: list[i].id },
       });
+
+      let name = list[i].name;
+      if (list[i].type === false) {
+        const id = userIds.filter((i) => i.userId !== userId)[0].userId;
+
+        name = (await this.prismaService.user.findUnique({ where: { id } }))
+          .userName;
+      }
+
       res.push({
         ...list[i],
+        name,
         userCount: userIds.length,
         userList: userIds.map((i) => i.userId),
       });
@@ -97,7 +128,7 @@ export class ChatroomService {
     });
 
     // 已在群中
-    if (userAndRoom) {
+    if (userAndRoom.length) {
       return userAndRoom[0].chatRoomId;
     }
 

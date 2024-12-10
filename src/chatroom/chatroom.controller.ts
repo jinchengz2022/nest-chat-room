@@ -47,6 +47,12 @@ export class ChatroomController {
     return this.chatroomService.joinChatRoom(chatRoomName, userId)
   }
 
+  @Post('AddGroupMember')
+  @RequireLogin()
+  addGroupMember(@Body() params: {userId: number; chatRoomId: number}) {
+    return this.chatroomService.addGroupMember(params)
+  }
+
   @Get('QuitChatRoom/:chatRoomId')
   @RequireLogin()
   quitChatRoom(@Param('chatRoomId') chatRoomId: number, @UserInfo('userId') userId: number) {
