@@ -1,0 +1,55 @@
+version: '3.8'
+services:
+  # fe-app:
+  #   image: registry.cn-chengdu.aliyuncs.com/react_2205/meeting-fe:test2
+  #   ports:
+  #     - 80:80
+  #   depends_on:
+  #     - nest-app
+  #   networks:
+  #     - common-network
+  nest-app:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    depends_on:
+      - mysql-container
+      - redis-container
+    ports:
+      - 3100:3100
+    networks:
+      - common-network
+  # minio-container:
+  #   image: bitnami/minio:latest
+  #   ports:
+  #     - 9000:9000
+  #     - 9001:9001
+  #   restart: always
+  #   volumes:
+  #     - /Users/jincheng/minio:/bitnami/minio/data
+  #   environment:
+  #     MINIO_ROOT_USER: root
+  #     MINIO_ROOT_PASSWORD: jinchengz
+  #   networks:
+  #     - common-network
+  mysql-container:
+    image: mysql
+    volumes:
+      - /Users/jincheng/mysql-data:/var/lib/mysql
+    restart: always
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci # 设置默认字符集
+    environment:
+      MYSQL_DATABASE: chat-room
+      MYSQL_ROOT_PASSWORD: 202411
+    networks:
+      - common-network
+  redis-container:
+    image: redis
+    restart: always
+    volumes:
+      - /Users/jincheng/redis-data:/data
+    networks:
+      - common-network
+networks:
+  common-network:
+    driver: bridge
